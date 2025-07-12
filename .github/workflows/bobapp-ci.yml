@@ -146,4 +146,4 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=Gerez-un-projet-collaboratif-en-int-grant-une-demarche-CI-CD
-            -Dsonar.organization=Zakarya
+            -Dsonar.organization=zakaryalahmadi
