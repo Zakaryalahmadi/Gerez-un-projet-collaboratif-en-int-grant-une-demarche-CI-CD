@@ -23,6 +23,6 @@ export class JokesService {
   }
 
   public joke$(): Observable<Joke | null> {
-    return this.subject.asObservable(); //to remove
+    return this.subject.asObservable();
   }
 }
