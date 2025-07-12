@@ -52,6 +52,15 @@ jobs:
           name: backend-coverage
           fail_ci_if_error: false
 
+      - name: Upload Backend Coverage Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: |
+            back/target/site/jacoco/
+            back/target/surefire-reports/
+          retention-days: 1
+
   test-frontend:
     name: Test Frontend
     runs-on: ubuntu-latest
@@ -86,6 +95,13 @@ jobs:
           name: frontend-coverage
           fail_ci_if_error: false
 
+      - name: Upload Frontend Coverage Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: front/coverage/
+          retention-days: 1
+
   sonar-analysis:
     name: SonarCloud Analysis
     runs-on: ubuntu-latest
@@ -102,20 +118,6 @@ jobs:
           java-version: "11"
           distribution: "temurin"
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "16"
-          cache: "npm"
-          cache-dependency-path: front/package-lock.json
-
-      - name: Cache Maven dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
         with:
@@ -123,20 +125,17 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      - name: Install Frontend Dependencies
-        run: |
-          cd front
-          npm ci
+      - name: Download Backend Coverage Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-coverage
+          path: back/target/
 
-      - name: Run Frontend Tests with Coverage
-        run: |
-          cd front
-          npm run test -- --no-watch --no-progress --browsers=ChromeHeadless --code-coverage
-
-      - name: Build and Test Backend
-        run: |
-          cd back
-          mvn clean verify jacoco:report
+      - name: Download Frontend Coverage Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage
+          path: front/coverage/
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
@@ -147,3 +146,5 @@ jobs:
           args: >
             -Dsonar.projectKey=Zakaryalahmadi_Gerez-un-projet-collaboratif-en-int-grant-une-demarche-CI-CD
             -Dsonar.organization=zakaryalahmadi
+            -Dsonar.coverage.jacoco.xmlReportPaths=back/target/site/jacoco/jacoco.xml
+            -Dsonar.javascript.lcov.reportPaths=front/coverage/lcov.info
